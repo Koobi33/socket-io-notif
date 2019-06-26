@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!--    <script src="wampy-all.min.js"></script>-->
+<!--    <script src="node_modules/socket.io-client/dist/socket.io.slim.js"></script>-->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // You should add auth_token to the query when connecting
+        // Replace THE_JWT_TOKEN with the valid one
+        var socket = io('http://localhost:3030', {query: 'auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOjgxLCJuYW1lIjoi0JTQvNC40YLRgNC40LkiLCJpYXQiOjE1NjE1NTY3OTYsImV4cCI6MTU2MTU2MDM5Nn0.hFR8LJtreQMR6HA0fPfyFYyhwr0VmFoZlgfQ92vB7VA'});
+        socket.on('connect', function (socket){
+            console.log(socket);
+        });
+            // Connection failed
+            socket.on('error', function(err) {
+                console.log(err);
+                throw new Error(err);
+            });
+         socket.on('success', function(data) {
+            io.emit('room', {name: 'user' + data.user[0].userID});
+            console.log(data.message);
+            console.log(data);
+            console.log('logged in: ' + data.user[0].email)
+        });
+            socket.on('hello', () => {
+                console.log('hi from PUSH');
+            });
+
+
+
+        // var socket = io('http://localhost:3030', {query: 'auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOjgxLCJpYXQiOjE1NTk5MTAwMjgsImV4cCI6MTU1OTkxMzYyOH0.j8dIBY3bdNHBllwY0JFJr70YUu6Pr2UjAKwAcNzvIJE'});
+        // // Connection succeeded
+
+        //
+
+    </script>
+    <meta charset="UTF-8">
+    <title>WAMPY</title>
+</head>
+<body>
+<h1>WAMPY</h1>
+<button id="push">PUSH</button>
+<script>
+    let but = document.getElementById("push");
+    but.addEventListener('click', function () {
+        socket.to('user' + data.user[0].userID).emit('hello');
+    })
+</script>
+</body>
+</html>
