@@ -34,55 +34,71 @@ const db = {
     table: 'users',
 };
 
-
 // using middleware
-io.use(jwtAuth.authenticate({
-    secret: 'justw',    // required, used to verify the token's signature
-    algorithm: 'HS256',        // optional, default to be HS256
-    succeedWithoutToken: true
-}, async function(payload, done) {
-    // you done callback will not include any payload data now
-    // if no token was supplied
-    if (payload && payload.userID) {
-        let user = await knex.from('users').select("*").where('id', '=', payload.userID);
+// io.use(jwtAuth.authenticate({
+//     secret: 'justwe',    // required, used to verify the token's signature
+//     algorithm: 'HS256',        // optional, default to be HS256
+//     succeedWithoutToken: true
+// }, async function(payload, done) {
+//     // you done callback will not include any payload data now
+//     // if no token was supplied
+//     if (payload && payload.userID) {
+//         let user = await knex.from('users').select("*").where('id', '=', payload.userID);
+//
+//         // User.findOne({id: payload.sub}, function(err, user) {
+//         function check(err, user) {
+//             if (err) {
+//                 // return error
+//                 return done(err);
+//             }
+//             if (!user) {
+//                 // return fail with an error message
+//                 return done(null, false, 'user does not exist');
+//             }
+//             // return success with a user info
+//             else {
+//                 return done(null, user)
+//             }
+//         }
+//         check(null, user);
+//     } else {
+//             return done() // in your connection handler user.logged_in will be false
+//         }
+//     }
+// ));
 
-        // User.findOne({id: payload.sub}, function(err, user) {
-        function check(err, user) {
-            if (err) {
-                // return error
-                return done(err);
-            }
-            if (!user) {
-                // return fail with an error message
-                return done(null, false, 'user does not exist');
-            }
-            // return success with a user info
-            else {
-                return done(null, user)
-            }
-        }
-        check(null, user);
-    } else {
-            return done() // in your connection handler user.logged_in will be false
-        }
-    }
-));
-io.on('room', function (data) {
-    console.log(data);
-    socket.join(data.name);
 
-})
 
 io.on('connection', function(socket) {
-    console.log('Authentication passed!');
 
+   // socket.id = socket.request.user[0].id;
+    console.log('Authentication passed!', socket.id);
+    let test = socket.id;
+    socket.on('sub', (room) => {
+       socket.join(room);
+       console.log(socket.id, 'has been joined to ', room)
+    });
+    socket.on('create', function (room) {
+       socket.join(room);
+       socket.leave(room, ()=>{});
+        console.log(room, 'room has been created');
+    });
     // now you can access user info through socket.request.user
     // socket.request.user.logged_in will be set to true if the user was authenticated
-    socket.emit('success', {
-        message: 'success logged in!',
-        user: socket.request.user
+    // socket.emit('success', {
+    //     message: 'success logged in!',
+    //     user: socket.request.user,
+    //     sock: test
+    // });
+    socket.on('room', () => {
+        console.log(io.sockets.adapter.rooms, 'all sockets in all rooms');
     });
+    socket.on('sendhello', (room) => {
+        console.log(room, 'roomname to say hello');
+        socket.in(room).emit('alarm');
+    })
 });
+
 
 const PORT = process.env.PORT || 3030;
 app.get('*', (req, res) => {
